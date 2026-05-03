@@ -1,6 +1,7 @@
-﻿using Dalamud.Game.Chat;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Game.Chat;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -8,7 +9,6 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Lumina.Excel.Sheets;
 using PartyIcons.Configuration;
 using PartyIcons.Stylesheet;
-using System.Collections.Generic;
 
 namespace PartyIcons.Runtime;
 
@@ -17,8 +17,8 @@ public sealed class ChatNameUpdater : IDisposable
     private readonly RoleTracker _roleTracker;
     private readonly PlayerStylesheet _stylesheet;
 
-    public ChatConfig PartyMode { get; set; }
-    public ChatConfig OthersMode { get; set; }
+    public ChatConfig PartyMode { get; set; } = new(ChatMode.GameDefault);
+    public ChatConfig OthersMode { get; set; } = new(ChatMode.GameDefault);
 
     public ChatNameUpdater(RoleTracker roleTracker, PlayerStylesheet stylesheet)
     {
@@ -31,13 +31,16 @@ public sealed class ChatNameUpdater : IDisposable
         Service.ChatGui.ChatMessage += OnChatMessage;
     }
 
-    private void OnChatMessage(IHandleableChatMessage message) {
+    private void OnChatMessage(IHandleableChatMessage message)
+    {
         if (Service.ClientState.IsPvP) {
             return;
         }
 
         if (message.LogKind is XivChatType.Say or XivChatType.Party or XivChatType.Alliance or XivChatType.Shout or XivChatType.Yell) {
-            Parse(message);
+            var sender = message.Sender;
+            Parse(message.LogKind, ref sender);
+            message.Sender = sender;
         }
     }
 
@@ -55,8 +58,8 @@ public sealed class ChatNameUpdater : IDisposable
     {
         var playerPayload = sender.Payloads.FirstOrDefault(p => p is PlayerPayload) as PlayerPayload ?? null;
 
-        if (playerPayload == null) {
-            playerPayload = new PlayerPayload(Service.PlayerState.CharacterName, Service.PlayerState.HomeWorld.RowId);
+        if (playerPayload == null && Service.ObjectTable.LocalPlayer is { } localPlayer) {
+            playerPayload = new PlayerPayload(localPlayer.Name.TextValue, localPlayer.HomeWorld.RowId);
         }
 
         return playerPayload;
@@ -87,6 +90,7 @@ public sealed class ChatNameUpdater : IDisposable
                 var prefix = text[..1];
                 return prefix[0] is >= '\uE000' and <= '\uF8FF' ? new GroupPrefix(sender, prefixPayload, prefix) : null;
             }
+
             return null;
         }
 
@@ -112,7 +116,6 @@ public sealed class ChatNameUpdater : IDisposable
             if (member.Name.ToString() == playerPayload.PlayerName
                 && member.World.RowId == playerPayload.World.RowId) {
                 senderJob = member.ClassJob.ValueNullable;
-
                 break;
             }
         }
@@ -123,7 +126,6 @@ public sealed class ChatNameUpdater : IDisposable
                     && pc.Name.ToString() == playerPayload.PlayerName
                     && pc.HomeWorld.RowId == playerPayload.World.RowId) {
                     senderJob = pc.ClassJob.ValueNullable;
-
                     break;
                 }
             }
@@ -132,14 +134,12 @@ public sealed class ChatNameUpdater : IDisposable
         return senderJob is { RowId: 0 } ? null : senderJob;
     }
 
-    private void Parse(IHandleableChatMessage message)
+    private void Parse(XivChatType chatType, ref SeString sender)
     {
-        var sender = message.Sender;
-
         if (GetPlayerPayload(sender) is not { } playerPayload)
             return;
 
-        var isGroupChat = message.LogKind is XivChatType.Party or XivChatType.Alliance;
+        var isGroupChat = chatType is XivChatType.Party or XivChatType.Alliance;
 
         ChatConfig config;
         GroupPrefix? groupPrefix;
@@ -171,8 +171,7 @@ public sealed class ChatNameUpdater : IDisposable
 
             groupPrefix?.RemovePrefix();
         }
-        else if (config.Mode != ChatMode.GameDefault)
-        {
+        else if (config.Mode != ChatMode.GameDefault) {
             if (FindSenderJob(playerPayload) is not { } senderJob)
                 return;
 

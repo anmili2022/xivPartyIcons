@@ -1,5 +1,5 @@
-﻿using Dalamud.Hooking;
 using System;
+using Dalamud.Hooking;
 using Dalamud.Memory;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
@@ -35,8 +35,6 @@ public sealed class PartyListHUDUpdater : IDisposable
     private unsafe void OnRequestedUpdateDetour(
         AtkUnitBase* addon, NumberArrayData** numberArrayData, StringArrayData** stringArrayData)
     {
-        // Service.Log.Warning("PartyListHUDUpdater: OnRequestedUpdateDetour");
-
         if (!_enabled) {
             _onRequestedUpdateHook.Original.Invoke(addon, numberArrayData, stringArrayData);
             return;
@@ -56,9 +54,8 @@ public sealed class PartyListHUDUpdater : IDisposable
         for (var i = 0; i < 8; i++) {
             var hudPartyMember = agentHud->PartyMembers.GetPointer(i);
             if (hudPartyMember->ContentId > 0) {
-                var name = hudPartyMember->Name;
                 var worldId = GetWorldId(hudPartyMember);
-                var hasRole = _roleTracker.TryGetAssignedRole(name.ToString(), worldId, out var roleId);
+                var hasRole = _roleTracker.TryGetAssignedRole(hudPartyMember->Name.ToString(), worldId, out var roleId);
                 if (hasRole) {
                     var index = hudPartyMember->Index;
                     var arrayIndex = NumberStructStartIndex + NumberStructSize * index;
@@ -120,6 +117,7 @@ public sealed class PartyListHUDUpdater : IDisposable
                 Service.Log.Verbose("PartyListHUDUpdater: Disable");
                 _onRequestedUpdateHook.Disable();
             }
+
             _enabled = shouldEnable;
             ForceArrayUpdate();
         }
@@ -177,6 +175,7 @@ public sealed class PartyListHUDUpdater : IDisposable
                 member.Name->SetPositionShort(29, 0);
                 member.GroupSlotIndicator->SetPositionShort(6, 0);
             }
+
             _modified = true;
         }
     }
@@ -189,6 +188,7 @@ public sealed class PartyListHUDUpdater : IDisposable
                 member.Name->SetPositionShort(19, 0);
                 member.GroupSlotIndicator->SetPositionShort(0, 0);
             }
+
             _modified = false;
         }
     }

@@ -1,17 +1,15 @@
-﻿using Dalamud.Game.Chat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Dalamud.Game.Chat;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Party;
 using Dalamud.Game.Gui.Toast;
 using Dalamud.Game.Text;
-using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Memory;
 using PartyIcons.Configuration;
 using PartyIcons.Entities;
 
@@ -39,8 +37,7 @@ public sealed class RoleTracker : IDisposable
         _configuration = configuration;
         _partyStateTracker = partyStateTracker;
 
-        foreach (var role in Enum.GetValues<RoleId>())
-        {
+        foreach (var role in Enum.GetValues<RoleId>()) {
             var roleIdentifier = role.ToString().ToLower();
             var regex = new Regex($"\\W{roleIdentifier}\\W");
 
@@ -51,8 +48,7 @@ public sealed class RoleTracker : IDisposable
         _occupationMessages.Add((RoleId.OT, " st "));
         _suggestionRegexes.Add((RoleId.OT, new Regex("\\Wst\\W")));
 
-        for (var i = 1; i < 5; i++)
-        {
+        for (var i = 1; i < 5; i++) {
             var roleId = RoleId.M1 + i - 1;
             _occupationMessages.Add((roleId, $" d{i} "));
             _suggestionRegexes.Add((roleId, new Regex($"\\Wd{i}\\W")));
@@ -68,7 +64,7 @@ public sealed class RoleTracker : IDisposable
     public void Disable()
     {
         Service.ChatGui.ChatMessage -= OnChatMessage;
-        _partyStateTracker.OnPartyStateChange += OnPartyStateChange;
+        _partyStateTracker.OnPartyStateChange -= OnPartyStateChange;
     }
 
     public void Dispose()
@@ -86,25 +82,21 @@ public sealed class RoleTracker : IDisposable
 
     public bool TryGetAssignedRole(string name, uint worldId, out RoleId roleId)
     {
-        // Service.Log.Verbose($"{_assignedRoles.Count}");
         return _assignedRoles.TryGetValue(PlayerId(name, worldId), out roleId);
     }
 
     public unsafe bool TryGetAssignedRole(IPlayerCharacter pc, out RoleId roleId)
     {
-        // Cheating a lot for small efficiency gains (avoid SeString creation and ExcelResolver allocation)
         var name = ((FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)pc.Address)->NameString;
         var worldId = ((FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)pc.Address)->HomeWorld;
 
-        return _assignedRoles.TryGetValue(PlayerId(name, worldId), out roleId);
+        return _assignedRoles.TryGetValue(PlayerId(name.ToString(), worldId), out roleId);
     }
 
     public void OccupyRole(string name, uint world, RoleId roleId)
     {
-        foreach (var kv in _occupiedRoles.ToArray())
-        {
-            if (kv.Value == roleId)
-            {
+        foreach (var kv in _occupiedRoles.ToArray()) {
+            if (kv.Value == roleId) {
                 _occupiedRoles.Remove(kv.Key);
             }
         }
@@ -118,7 +110,6 @@ public sealed class RoleTracker : IDisposable
     {
         _suggestedRoles[PlayerId(name, world)] = roleId;
         OnRoleSuggested?.Invoke(name, roleId);
-        // ToastGui.ShowQuest($"{roleId} is now suggested for {name}");
     }
 
     public void ResetOccupations()
@@ -133,10 +124,8 @@ public sealed class RoleTracker : IDisposable
         _assignedRoles.Clear();
         _unassignedRoles.Clear();
 
-        foreach (var role in Enum.GetValues<RoleId>())
-        {
-            if (role != default)
-            {
+        foreach (var role in Enum.GetValues<RoleId>()) {
+            if (role != default) {
                 _unassignedRoles.Add(role);
             }
         }
@@ -148,8 +137,7 @@ public sealed class RoleTracker : IDisposable
 
         Service.Log.Verbose($"RoleTracker: Assigning current occupations ({_occupiedRoles.Count})");
 
-        foreach (var kv in _occupiedRoles)
-        {
+        foreach (var kv in _occupiedRoles) {
             Service.Log.Verbose($"RoleTracker: {kv.Key} == {kv.Value} as per occupation");
 
             _assignedRoles[kv.Key] = kv.Value;
@@ -158,36 +146,26 @@ public sealed class RoleTracker : IDisposable
 
         Service.Log.Verbose($"RoleTracker: Assigning static assignments ({_configuration.StaticAssignments.Count})");
 
-        foreach (var kv in _configuration.StaticAssignments)
-        {
-            foreach (var member in Service.PartyList)
-            {
+        foreach (var kv in _configuration.StaticAssignments) {
+            foreach (var member in Service.PartyList) {
                 var playerId = PlayerId(member);
 
-                if (_assignedRoles.ContainsKey(playerId))
-                {
+                if (_assignedRoles.ContainsKey(playerId)) {
                     Service.Log.Verbose($"RoleTracker: {PlayerId(member)} has already been assigned a role");
-
                     continue;
                 }
 
                 var playerDescription = $"{member.Name}@{member.World.Value.Name}";
 
-                if (kv.Key.Equals(playerDescription))
-                {
-                    var applicableRoles =
-                        GetApplicableRolesForGenericRole(
-                            JobRoleExtensions.RoleFromByte(member.ClassJob.Value.Role));
+                if (kv.Key.Equals(playerDescription)) {
+                    var applicableRoles = GetApplicableRolesForGenericRole(JobRoleExtensions.RoleFromByte(member.ClassJob.Value.Role));
 
-                    if (applicableRoles.Contains(kv.Value))
-                    {
+                    if (applicableRoles.Contains(kv.Value)) {
                         Service.Log.Verbose($"RoleTracker: {playerId} == {kv.Value} as per static assignments {playerDescription}");
                         _assignedRoles[playerId] = kv.Value;
                     }
-                    else
-                    {
-                        Service.Log.Verbose(
-                            $"RoleTracker: Skipping static assignment - applicable roles {string.Join(", ", applicableRoles)}, static role - {kv.Value}");
+                    else {
+                        Service.Log.Verbose($"RoleTracker: Skipping static assignment - applicable roles {string.Join(", ", applicableRoles)}, static role - {kv.Value}");
                     }
                 }
             }
@@ -195,20 +173,14 @@ public sealed class RoleTracker : IDisposable
 
         Service.Log.Verbose("RoleTracker: Assigning the rest");
 
-        foreach (var member in Service.PartyList)
-        {
-            if (_assignedRoles.ContainsKey(PlayerId(member)))
-            {
+        foreach (var member in Service.PartyList) {
+            if (_assignedRoles.ContainsKey(PlayerId(member))) {
                 Service.Log.Verbose($"RoleTracker: {PlayerId(member)} has already been assigned a role");
-
                 continue;
             }
 
-            var roleToAssign =
-                FindUnassignedRoleForGenericRole(JobRoleExtensions.RoleFromByte(member.ClassJob.Value.Role));
-
-            if (roleToAssign != default)
-            {
+            var roleToAssign = FindUnassignedRoleForGenericRole(JobRoleExtensions.RoleFromByte(member.ClassJob.Value.Role));
+            if (roleToAssign != default) {
                 Service.Log.Verbose($"RoleTracker: {PlayerId(member)} == {roleToAssign} as per first available");
                 _assignedRoles[PlayerId(member)] = roleToAssign;
                 _unassignedRoles.Remove(roleToAssign);
@@ -221,31 +193,27 @@ public sealed class RoleTracker : IDisposable
     public string DebugDescription()
     {
         var sb = new StringBuilder();
-        sb.Append($"Assignments:\n");
+        sb.Append("Assignments:\n");
 
-        foreach (var kv in _assignedRoles)
-        {
+        foreach (var kv in _assignedRoles) {
             sb.Append($"Role {kv.Value} assigned to {kv.Key}\n");
         }
 
-        sb.Append($"\nOccupations:\n");
+        sb.Append("\nOccupations:\n");
 
-        foreach (var kv in _occupiedRoles)
-        {
+        foreach (var kv in _occupiedRoles) {
             sb.Append($"Role {kv.Value} occupied by {kv.Key}\n");
         }
 
         sb.Append("\nSuggested roles:\n");
 
-        foreach (var kv in _suggestedRoles)
-        {
+        foreach (var kv in _suggestedRoles) {
             sb.Append($"Role {kv.Value} suggested by {kv.Key}\n");
         }
 
         sb.Append("\nUnassigned roles:\n");
 
-        foreach (var k in _unassignedRoles)
-        {
+        foreach (var k in _unassignedRoles) {
             sb.Append(" " + k);
         }
 
@@ -254,8 +222,7 @@ public sealed class RoleTracker : IDisposable
 
     private void OnPartyStateChange(PartyChangeType type)
     {
-        if (!Service.Condition[ConditionFlag.ParticipatingInCrossWorldPartyOrAlliance] && !Plugin.PartyStateTracker.InParty && _occupiedRoles.Count != 0)
-        {
+        if (!Service.Condition[ConditionFlag.ParticipatingInCrossWorldPartyOrAlliance] && !Plugin.PartyStateTracker.InParty && _occupiedRoles.Count != 0) {
             Service.Log.Verbose("RoleTracker: Resetting occupations, no longer in a party");
             ResetOccupations();
             return;
@@ -274,54 +241,40 @@ public sealed class RoleTracker : IDisposable
     private RoleId FindUnassignedRoleForGenericRole(GenericRole role)
     {
         var applicableRoles = GetApplicableRolesForGenericRole(role);
-
         return applicableRoles.FirstOrDefault(r => _unassignedRoles.Contains(r));
     }
 
     private IEnumerable<RoleId> GetApplicableRolesForGenericRole(GenericRole role)
     {
-        switch (role)
+        return role switch
         {
-            case GenericRole.Tank:
-                return new[] { RoleId.MT, RoleId.OT };
-
-            case GenericRole.Melee:
-                return new[] { RoleId.M1, RoleId.M2, RoleId.R1, RoleId.R2 };
-
-            case GenericRole.Ranged:
-                return new[] { RoleId.R1, RoleId.R2, RoleId.M1, RoleId.M2 };
-
-            case GenericRole.Healer:
-                return new[] { RoleId.H1, RoleId.H2 };
-
-            default:
-                return new[] { RoleId.Undefined };
-        }
+            GenericRole.Tank => new[] { RoleId.MT, RoleId.OT },
+            GenericRole.Melee => new[] { RoleId.M1, RoleId.M2, RoleId.R1, RoleId.R2 },
+            GenericRole.Ranged => new[] { RoleId.R1, RoleId.R2, RoleId.M1, RoleId.M2 },
+            GenericRole.Healer => new[] { RoleId.H1, RoleId.H2 },
+            _ => new[] { RoleId.Undefined }
+        };
     }
 
-    // private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
     private void OnChatMessage(IHandleableChatMessage message)
     {
-        if (_configuration.AssignFromChat && message.LogKind is XivChatType.Party or XivChatType.CrossParty or XivChatType.Say)
-        {
+        if (_configuration.AssignFromChat && (message.LogKind == XivChatType.Party || message.LogKind == XivChatType.CrossParty || message.LogKind == XivChatType.Say)) {
             string? playerName = null;
             uint? playerWorld = null;
 
-            if (message.Sender.Payloads.FirstOrDefault(p => p is PlayerPayload) is not PlayerPayload playerPayload)
-            {
-                playerName = Service.PlayerState.CharacterName;
-                playerWorld = Service.PlayerState.HomeWorld.RowId;
+            var playerPayload = message.Sender.Payloads.FirstOrDefault(p => p is PlayerPayload) as PlayerPayload;
+
+            if (playerPayload == null) {
+                playerName = Service.ObjectTable.LocalPlayer?.Name.TextValue;
+                playerWorld = Service.ObjectTable.LocalPlayer?.HomeWorld.RowId;
             }
-            else
-            {
-                playerName = playerPayload?.PlayerName;
-                playerWorld = playerPayload?.World.RowId;
+            else {
+                playerName = playerPayload.PlayerName;
+                playerWorld = playerPayload.World.RowId;
             }
 
-            if (playerName == null || !playerWorld.HasValue)
-            {
+            if (playerName == null || !playerWorld.HasValue) {
                 Service.Log.Verbose($"RoleTracker: Failed to get player data from {message.Sender} at {message.Timestamp} ({message.Sender.Payloads})");
-
                 return;
             }
 
@@ -333,57 +286,43 @@ public sealed class RoleTracker : IDisposable
             var roleToSuggest = RoleId.Undefined;
             var suggestionTainted = false;
 
-            foreach (var tuple in _occupationMessages)
-            {
-                if (tuple.Item2.Equals(paddedText))
-                {
-                    Service.Log.Verbose(
-                        $"RoleTracker: Message contained role occupation ({playerName}@{playerWorld} - {text}, detected role {tuple.Item1})");
+            foreach (var tuple in _occupationMessages) {
+                if (tuple.Item2.Equals(paddedText)) {
+                    Service.Log.Verbose($"RoleTracker: Message contained role occupation ({playerName}@{playerWorld} - {text}, detected role {tuple.Item1})");
 
-                    if (roleToOccupy == RoleId.Undefined)
-                    {
+                    if (roleToOccupy == RoleId.Undefined) {
                         roleToOccupy = tuple.Item1;
                     }
-                    else
-                    {
-                        Service.Log.Verbose($"RoleTracker: Multiple role occupation matches, aborting");
+                    else {
+                        Service.Log.Verbose("RoleTracker: Multiple role occupation matches, aborting");
                         occupationTainted = true;
-
                         break;
                     }
                 }
             }
 
-            foreach (var tuple in _suggestionRegexes)
-            {
-                if (tuple.Item2.IsMatch(paddedText))
-                {
-                    Service.Log.Verbose(
-                        $"RoleTracker: Message contained role suggestion ({playerName}@{playerWorld}: {text}, detected {tuple.Item1}");
+            foreach (var tuple in _suggestionRegexes) {
+                if (tuple.Item2.IsMatch(paddedText)) {
+                    Service.Log.Verbose($"RoleTracker: Message contained role suggestion ({playerName}@{playerWorld}: {text}, detected {tuple.Item1}");
 
-                    if (roleToSuggest == RoleId.Undefined)
-                    {
+                    if (roleToSuggest == RoleId.Undefined) {
                         roleToSuggest = tuple.Item1;
                     }
-                    else
-                    {
+                    else {
                         Service.Log.Verbose("RoleTracker: Multiple role suggesting matches, aborting");
                         suggestionTainted = true;
-
                         break;
                     }
                 }
             }
 
-            if (!occupationTainted && roleToOccupy != RoleId.Undefined)
-            {
+            if (!occupationTainted && roleToOccupy != RoleId.Undefined) {
                 OccupyRole(playerName, playerWorld.Value, roleToOccupy);
 
-                Service.Log.Verbose($"RoleTracker: Recalculating assignments due to new occupations");
+                Service.Log.Verbose("RoleTracker: Recalculating assignments due to new occupations");
                 CalculateUnassignedPartyRoles();
             }
-            else if (!suggestionTainted && roleToSuggest != RoleId.Undefined)
-            {
+            else if (!suggestionTainted && roleToSuggest != RoleId.Undefined) {
                 SuggestRole(playerName, playerWorld.Value, roleToSuggest);
             }
         }

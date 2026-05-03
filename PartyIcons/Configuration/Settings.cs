@@ -107,8 +107,8 @@ public class Settings : IPluginConfiguration
                     Service.Log.Information($"Loaded configuration v{versionNumber} (current)");
                 }
                 else if (versionNumber == 1) {
-                    var configV1 = JsonConvert.DeserializeObject<SettingsV1>(fileText);
-                    config = new Settings(configV1!);
+                    var configV1 = JsonConvert.DeserializeObject<SettingsV1>(fileText) ?? new SettingsV1();
+                    config = new Settings(configV1);
                     config.Save();
                     Service.Log.Information($"Converted configuration v{versionNumber} to v{CurrentVersion}");
                 }

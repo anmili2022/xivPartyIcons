@@ -24,11 +24,11 @@ public sealed class GeneralTab
             var usePriorityIcons = true;
             ImGui.Checkbox("##usePriorityIcons", ref usePriorityIcons);
             ImGui.SameLine();
-            ImGui.Text("Prioritize status icons");
+            ImGui.Text("优先显示状态图标");
             using (ImRaii.PushIndent())
             using (ImRaii.PushColor(ImGuiCol.Text, ImGuiColors.DalamudOrange)) {
                 ImGui.TextWrapped(
-                    "Note: Priority status icons are now configured per nameplate type from the 'Appearance' tab via the 'Swap Style' option. You can also configure which icons are considered important enough to prioritize in the 'Status Icons' tab.");
+                    "注意：优先状态图标现在可以通过'外观'选项卡中的'交换样式'选项为每种姓名板类型进行配置。您还可以在'状态图标'选项卡中配置哪些图标被认为足够重要而需要优先显示。");
             }
             ImGui.Dummy(new Vector2(0, 3));
         }
@@ -41,9 +41,9 @@ public sealed class GeneralTab
 
         ImGui.SameLine();
         using (_flashingText.PushColor(Plugin.Settings.TestingMode)) {
-            ImGui.Text("Enable testing mode");
+            ImGui.Text("启用测试模式");
         }
-        ImGuiComponents.HelpMarker("Applies settings to any player, contrary to only the ones that are in the party.");
+        ImGuiComponents.HelpMarker("将设置应用于任何玩家，而不仅仅是队伍中的玩家。");
 
         var chatContentMessage = Plugin.Settings.ChatContentMessage;
 
@@ -53,14 +53,14 @@ public sealed class GeneralTab
         }
 
         ImGui.SameLine();
-        ImGui.Text("Display chat message when entering duty");
-        ImGuiComponents.HelpMarker("Can be used to determine the duty type before fully loading in.");
+        ImGui.Text("进入副本时显示聊天消息");
+        ImGuiComponents.HelpMarker("可用于在完全加载前确定副本类型。");
 
         ImGuiExt.Spacer(10);
-        if (ImGuiExt.ButtonEnabledWhen(ImGui.GetIO().KeyCtrl, "Show upgrade guide again")) {
+        if (ImGuiExt.ButtonEnabledWhen(ImGui.GetIO().KeyCtrl, "再次显示升级指南")) {
             UpgradeGuideTab.ForceRedisplay = true;
         }
-        ImGuiExt.HoverTooltip("Hold Control to allow clicking");
+        ImGuiExt.HoverTooltip("按住Control键允许点击");
 
         _notice.DisplayNotice();
     }

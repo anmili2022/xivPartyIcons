@@ -13,46 +13,46 @@ public static class ChatNameTab
     {
         ImGuiExt.Spacer(2);
 
-        ImGuiExt.SectionHeader("Overworld");
+        ImGuiExt.SectionHeader("野外");
 
         using (ImRaii.PushIndent(15f)) {
             ChatModeSection("##chat_overworld",
                 () => Plugin.Settings.ChatOverworld,
                 (config) => Plugin.Settings.ChatOverworld = config,
-                "Party:");
+                "队伍：");
 
             ChatModeSection("##chat_others",
                 () => Plugin.Settings.ChatOthers,
                 (config) => Plugin.Settings.ChatOthers = config,
-                "Others:");
+                "其他玩家：");
         }
 
-        ImGuiExt.SectionHeader("Instances");
+        ImGuiExt.SectionHeader("副本");
 
         using (ImRaii.PushIndent(15f)) {
             ChatModeSection("##chat_dungeon",
                 () => Plugin.Settings.ChatDungeon,
                 (config) => Plugin.Settings.ChatDungeon = config,
-                "Dungeon:");
+                "4人迷宫：");
 
             ChatModeSection("##chat_raid",
                 () => Plugin.Settings.ChatRaid,
                 (config) => Plugin.Settings.ChatRaid = config,
-                "Raid:");
+                "8人副本：");
 
             ChatModeSection("##chat_alliance",
                 () => Plugin.Settings.ChatAllianceRaid,
                 (config) => Plugin.Settings.ChatAllianceRaid = config,
-                "Alliance:");
+                "团队副本：");
 
             ChatModeSection("##chat_chaotic",
                 () => Plugin.Settings.ChatChaoticRaid,
                 (config) => Plugin.Settings.ChatChaoticRaid = config,
-                "Chaotic:");
+                "诛灭战：");
         }
     }
     
-    private static void ChatModeSection(string label, Func<ChatConfig> getter, Action<ChatConfig> setter, string title = "Chat name: ")
+    private static void ChatModeSection(string label, Func<ChatConfig> getter, Action<ChatConfig> setter, string title = "聊天名称：")
     {
         ChatConfig NewConf = new ChatConfig(ChatMode.GameDefault, true);
 
@@ -65,7 +65,7 @@ public static class ChatNameTab
         {
             NewConf = getter();
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
             setter(NewConf);
             Plugin.Settings.Save();
@@ -88,7 +88,7 @@ public static class ChatNameTab
         ImGui.SameLine();
         var colored = NewConf.UseRoleColor;
 
-        if (ImGui.Checkbox($"Role Color{label}", ref colored))
+        if (ImGui.Checkbox($"职能颜色{label}", ref colored))
         {
             NewConf.UseRoleColor = colored;
             setter(NewConf);

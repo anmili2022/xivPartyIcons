@@ -14,7 +14,7 @@ namespace PartyIcons.UI.Settings;
 
 public sealed class StaticAssignmentsTab
 {
-    private string _occupationNewName = "Character Name@World";
+    private string _occupationNewName = "角色名称@服务器";
     private RoleId _occupationNewRole = RoleId.Undefined;
 
     public void Draw()
@@ -30,8 +30,8 @@ public sealed class StaticAssignmentsTab
         }
 
         ImGui.SameLine();
-        ImGui.Text("Eastern role naming convention");
-        ImGuiComponents.HelpMarker("Use Japanese data center role naming convention (MT ST D1-D4 H1-2).");
+        ImGui.Text("使用东方职能命名约定");
+        ImGuiComponents.HelpMarker("使用日本数据中心的职能命名约定（MT ST D1-D4 H1-2）。");
 
         var displayRoleInPartyList = Plugin.Settings.DisplayRoleInPartyList;
 
@@ -42,9 +42,9 @@ public sealed class StaticAssignmentsTab
         }
 
         ImGui.SameLine();
-        ImGui.Text("Replace party numbers with role in Party List");
+        ImGui.Text("在小队列表中用职能替换队伍编号");
         ImGuiExt.ImGuiHelpTooltip(
-            "Only works when nameplates set to 'Role letters' or 'Small job icon, role and name'.");
+            "仅在姓名板设置为'职能字母'或'小职业图标、职能和名称'时有效。");
 
         var useContextMenu = Plugin.Settings.UseContextMenu;
         
@@ -55,8 +55,8 @@ public sealed class StaticAssignmentsTab
         }
 
         ImGui.SameLine();
-        ImGui.Text("Add context menu commands to assign roles");
-        ImGuiComponents.HelpMarker("Adds context menu commands to assign roles to players. When applicable, commands to swap role and use a suggested role are also added.");
+        ImGui.Text("添加上下文菜单命令以分配职能");
+        ImGuiComponents.HelpMarker("添加上下文菜单命令以为玩家分配职能。在适用情况下，还会添加交换职能和使用建议职能的命令。");
 
         var useContextMenuStatic = Plugin.Settings.UseContextMenuStatic;
 
@@ -67,7 +67,7 @@ public sealed class StaticAssignmentsTab
         }
 
         ImGui.SameLine();
-        ImGui.Text("Add context menu command to save a role as static");
+        ImGui.Text("添加上下文菜单命令以保存固定职能");
 
         var useContextMenuSubmenu = Plugin.Settings.UseContextMenuSubmenu;
 
@@ -78,7 +78,7 @@ public sealed class StaticAssignmentsTab
         }
 
         ImGui.SameLine();
-        ImGui.Text("Place context menu commands (if enabled) in a dedicated submenu");
+        ImGui.Text("将上下文菜单命令（如果启用）放在专用子菜单中");
 
         var assignFromChat = Plugin.Settings.AssignFromChat;
 
@@ -89,12 +89,12 @@ public sealed class StaticAssignmentsTab
         }
 
         ImGui.SameLine();
-        ImGui.Text("Allow party members to self-assign roles via party chat");
-        ImGuiComponents.HelpMarker("Allows party members to assign themselves a role, e.g. saying 'h1' in party chat will give that player the healer 1 role.");
+        ImGui.Text("允许小队成员通过小队聊天自行分配职能");
+        ImGuiComponents.HelpMarker("允许小队成员为自己分配职能，例如在小队聊天中输入'h1'将为该玩家分配H1职能。");
         
         ImGui.Dummy(new Vector2(0, 2f));
         ImGui.PushStyleColor(0, ImGuiHelpers.DefaultColorPalette()[0]);
-        ImGui.Text("Static Roles");
+        ImGui.Text("固定职能");
         ImGui.PopStyleColor();
         ImGui.Separator();
         ImGui.Dummy(new Vector2(0, 2f));
@@ -102,7 +102,7 @@ public sealed class StaticAssignmentsTab
             ImGui.PushStyleColor(0, ImGuiColors.ParsedGrey);
             {
                 ImGui.TextWrapped(
-                    "Name should include world name, separated by @. Keep in mind that if players job is not appropriate for the assigned role, the assignment will be ignored!");
+                    "名称应包含服务器名，用@分隔。请注意，如果玩家的职业不适合所分配的职能，分配将被忽略！");
                 ImGui.Dummy(new Vector2(0f, 25f));
             }
             ImGui.PopStyleColor();

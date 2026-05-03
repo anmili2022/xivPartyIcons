@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using PartyIcons.Configuration;
@@ -28,8 +28,7 @@ public unsafe class UpdateContext
     {
         var entityId = playerCharacter.EntityId;
         PlayerCharacter = playerCharacter;
-
-        IsLocalPlayer = entityId == Service.PlayerState.EntityId;
+        IsLocalPlayer = entityId == Service.ObjectTable.LocalPlayer?.EntityId;
         IsPartyMember = IsLocalPlayer || GroupManager.Instance()->MainGroup.IsEntityIdInParty(entityId);
         Job = (Job)((Character*)playerCharacter.Address)->CharacterData.ClassJob;
         Status = (Status)((Character*)playerCharacter.Address)->CharacterData.OnlineStatus;

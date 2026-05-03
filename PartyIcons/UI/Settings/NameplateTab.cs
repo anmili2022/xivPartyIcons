@@ -45,7 +45,7 @@ public sealed class NameplateTab
     {
         ImGui.Dummy(new Vector2(0, 2f));
 
-        ImGui.Text("Icon set:");
+        ImGui.Text("图标集：");
         ImGui.SameLine();
         ImGuiExt.SetComboWidth(Enum.GetValues<IconSetId>().Select(UiNames.GetName));
 
@@ -56,7 +56,7 @@ public sealed class NameplateTab
         });
 
         var iconSizeMode = Plugin.Settings.SizeMode;
-        ImGui.Text("Nameplate size:");
+        ImGui.Text("姓名板大小：");
         ImGui.SameLine();
         ImGuiExt.SetComboWidth(Enum.GetValues<NameplateSizeMode>().Select(x => x.ToString()));
 
@@ -71,16 +71,16 @@ public sealed class NameplateTab
             }
         }
 
-        ImGuiComponents.HelpMarker("Affects all presets, except Game Default.");
+        ImGuiComponents.HelpMarker("影响所有预设，除了游戏默认设置。");
 
         if (Plugin.Settings.SizeMode == NameplateSizeMode.Custom) {
             var scale = Plugin.Settings.SizeModeCustom;
-            if (ImGui.SliderFloat("Custom scale", ref scale, 0.3f, 3f)) {
+            if (ImGui.SliderFloat("自定义缩放", ref scale, 0.3f, 3f)) {
                 Plugin.Settings.SizeModeCustom = Math.Clamp(scale, 0.1f, 10f);
                 Plugin.Settings.Save();
             }
 
-            ImGuiComponents.HelpMarker("Hold Control and click the slider to input an exact value");
+            ImGuiComponents.HelpMarker("按住Ctrl键并点击滑块可以输入精确数值");
         }
 
         var hideLocalNameplate = Plugin.Settings.HideLocalPlayerNameplate;
@@ -90,64 +90,64 @@ public sealed class NameplateTab
         }
 
         ImGui.SameLine();
-        ImGui.Text("Hide own nameplate");
+        ImGui.Text("隐藏自己的姓名板");
         ImGuiComponents.HelpMarker(
-            "You can turn your own nameplate on and also turn this\nsetting own to only use nameplate to display own raid position.\nIf you don't want your position displayed with this setting you can simply disable\nyour nameplates in the Character settings.");
+            "您可以打开自己的姓名板，同时开启此设置，仅使用姓名板显示自己的团队位置。\n如果您不希望在此设置下显示自己的位置，可以在角色设置中禁用您的姓名板。");
 
         ImGuiExt.Spacer(6);
 
-        ImGuiExt.SectionHeader("Overworld");
+        ImGuiExt.SectionHeader("野外");
         using (ImRaii.PushIndent(15f)) {
             NameplateModeSection("##np_overworld", () => Plugin.Settings.DisplaySelectors.DisplayOverworld,
                 sel => Plugin.Settings.DisplaySelectors.DisplayOverworld = sel,
-                "Party:");
+                "队伍：");
 
             NameplateModeSection("##np_others", () => Plugin.Settings.DisplaySelectors.DisplayOthers,
                 sel => Plugin.Settings.DisplaySelectors.DisplayOthers = sel,
-                "Others:");
+                "其他玩家：");
         }
 
-        ImGuiExt.SectionHeader("Instances");
+        ImGuiExt.SectionHeader("副本");
         using (ImRaii.PushIndent(15f)) {
             NameplateModeSection("##np_dungeon", () => Plugin.Settings.DisplaySelectors.DisplayDungeon,
                 (sel) => Plugin.Settings.DisplaySelectors.DisplayDungeon = sel,
-                "Dungeon:");
+                "4人迷宫：");
 
             NameplateModeSection("##np_raid", () => Plugin.Settings.DisplaySelectors.DisplayRaid,
                 sel => Plugin.Settings.DisplaySelectors.DisplayRaid = sel,
-                "Raid:");
+                "8人副本：");
 
             NameplateModeSection("##np_alliance", () => Plugin.Settings.DisplaySelectors.DisplayAllianceRaid,
                 sel => Plugin.Settings.DisplaySelectors.DisplayAllianceRaid = sel,
-                "Alliance:");
+                "团队副本：");
 
             NameplateModeSection("##np_chaotic", () => Plugin.Settings.DisplaySelectors.DisplayChaoticRaid,
                sel => Plugin.Settings.DisplaySelectors.DisplayChaoticRaid = sel,
-               "Chaotic:");
+               "诛灭战：");
         }
 
-        ImGuiExt.SectionHeader("Field Operations");
+        ImGuiExt.SectionHeader("野外作战");
 
         using (ImRaii.PushIndent(15f)) {
-            ImGui.TextDisabled("e.g. Eureka, Bozja");
+            ImGui.TextDisabled("例如：优雷卡，博兹雅");
 
             NameplateModeSection("##np_field_party", () => Plugin.Settings.DisplaySelectors.DisplayFieldOperationParty,
-                sel => Plugin.Settings.DisplaySelectors.DisplayFieldOperationParty = sel, "Party:");
+                sel => Plugin.Settings.DisplaySelectors.DisplayFieldOperationParty = sel, "队伍：");
 
             NameplateModeSection("##np_field_others",
                 () => Plugin.Settings.DisplaySelectors.DisplayFieldOperationOthers,
-                sel => Plugin.Settings.DisplaySelectors.DisplayFieldOperationOthers = sel, "Others:");
+                sel => Plugin.Settings.DisplaySelectors.DisplayFieldOperationOthers = sel, "其他玩家：");
         }
 
         ImGuiExt.SectionHeader("PvP");
 
         using (ImRaii.PushIndent(15f)) {
-            ImGui.TextDisabled("This plugin is intentionally disabled during PvP matches.");
+            ImGui.TextDisabled("此插件在PvP比赛期间有意禁用。");
         }
 
         ImGuiExt.Spacer(15);
 
-        if (ImGui.CollapsingHeader("Examples")) {
+        if (ImGui.CollapsingHeader("示例")) {
             foreach (var kv in _nameplateExamples) {
                 CollapsibleExampleImage(kv.Key, kv.Value);
             }
@@ -162,7 +162,7 @@ public sealed class NameplateTab
     }
 
     private static void NameplateModeSection(string label, Func<DisplaySelector> getter, Action<DisplaySelector> setter,
-        string title = "Nameplate: ")
+        string title = "姓名板：")
     {
         ImGui.SetCursorPosY(ImGui.GetCursorPos().Y + 3f);
         ImGui.Text(title);

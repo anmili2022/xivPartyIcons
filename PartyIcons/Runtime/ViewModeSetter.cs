@@ -1,5 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game;
 using System;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using PartyIcons.Configuration;
@@ -58,7 +58,7 @@ public sealed class ViewModeSetter
 
     private void ForceRefresh()
     {
-        OnTerritoryChanged(0);
+        OnTerritoryChanged(0u);
     }
 
     private void Disable()
@@ -72,7 +72,7 @@ public sealed class ViewModeSetter
         Disable();
     }
 
-    private void OnTerritoryChanged(uint u)
+    private void OnTerritoryChanged(uint e)
     {
         var maybeContent =
             _contentFinderConditionsSheet.FirstOrNull(t => t.TerritoryType.RowId == Service.ClientState.TerritoryType);
@@ -82,7 +82,7 @@ public sealed class ViewModeSetter
             var gameMain = GameMain.Instance();
             if (gameMain != null) {
                 if (GameMain.Instance()->CurrentContentFinderConditionId is var conditionId and not 0) {
-                    if (_contentFinderConditionsSheet.GetRowOrDefault(conditionId) is {} conditionContent) {
+                    if (_contentFinderConditionsSheet.GetRowOrDefault(conditionId) is { } conditionContent) {
                         maybeContent = conditionContent;
                     }
                 }
@@ -107,8 +107,8 @@ public sealed class ViewModeSetter
 
             var memberType = content.ContentMemberType.RowId;
 
-            if (content.TerritoryType.ValueNullable is { TerritoryIntendedUse.RowId: 41 or 48 or 61 }) {
-                // Bozja/Eureka/OccultCrescent
+            if (content.TerritoryType.ValueNullable is { TerritoryIntendedUse.RowId: 41 or 48 }) {
+                // Bozja/Eureka
                 memberType = 127;
             }
 
@@ -145,7 +145,7 @@ public sealed class ViewModeSetter
         _partyListHudUpdater.SetRoleVisibility(enableHud);
 
         Service.Log.Verbose($"Setting modes: nameplates party {_nameplateView.PartyDisplay.Mode} others {_nameplateView.OthersDisplay.Mode}, chat {_chatNameUpdater.PartyMode}, update HUD {enableHud}");
-        Service.Log.Debug($"Entered ZoneType {ZoneType.ToString()}");
+        Service.Log.Debug($"Entered ZoneType {ZoneType}");
 
         Service.Framework.RunOnFrameworkThread(NameplateUpdater.ForceRedrawNamePlates);
     }

@@ -28,9 +28,9 @@ public static class StatusTab
     {
         ImGuiExt.Spacer(2);
 
-        ImGui.TextDisabled("Configure status icon visibility based on location");
+        ImGui.TextDisabled("根据位置配置状态图标的可见性");
 
-        ImGuiExt.SectionHeader("Presets");
+        ImGuiExt.SectionHeader("预设");
 
         List<Action> actions = [];
 
@@ -39,11 +39,11 @@ public static class StatusTab
         DrawStatusConfig(Plugin.Settings.StatusConfigs.FieldOperations, ref actions);
         DrawStatusConfig(Plugin.Settings.StatusConfigs.OverworldLegacy, ref actions);
 
-        ImGuiExt.SectionHeader("User-created");
+        ImGuiExt.SectionHeader("用户创建的");
 
-        if (ImGui.Button("Create new")) {
+        if (ImGui.Button("创建新预设")) {
             Plugin.Settings.StatusConfigs.Custom.Add(
-                new StatusConfig($"Custom status list {Plugin.Settings.StatusConfigs.Custom.Count + 1}"));
+                new StatusConfig($"自定义状态列表 {Plugin.Settings.StatusConfigs.Custom.Count + 1}"));
             Plugin.Settings.Save();
         }
 
@@ -60,7 +60,7 @@ public static class StatusTab
 
     private static void DrawStatusConfig(StatusConfig config, ref List<Action> actions)
     {
-        var textSize = ImGui.CalcTextSize("Important");
+        var textSize = ImGui.CalcTextSize("重要");
         var rowHeight = textSize.Y + ImGui.GetStyle().FramePadding.Y * 2;
         var iconSize = new Vector2(rowHeight, rowHeight);
         var buttonSize = new Vector2(textSize.X + ImGui.GetStyle().FramePadding.X * 2 + 10, rowHeight);
@@ -73,7 +73,7 @@ public static class StatusTab
 
             using (ImRaii.PushIndent(iconSize.X + ImGui.GetStyle().FramePadding.X + ImGui.GetStyle().ItemSpacing.X)) {
                 if (config.Preset == StatusPreset.Custom) {
-                    ImGui.TextDisabled("Name: ");
+                    ImGui.TextDisabled("名称：");
 
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 10);
@@ -87,19 +87,19 @@ public static class StatusTab
                     }
                 }
 
-                ImGui.TextDisabled("Other actions: ");
+                ImGui.TextDisabled("其他操作：");
                 if (config.Preset != StatusPreset.Custom) {
                     ImGui.SameLine();
-                    if (ImGuiExt.ButtonEnabledWhen(ImGui.GetIO().KeyCtrl, "Reset to default")) {
+                    if (ImGuiExt.ButtonEnabledWhen(ImGui.GetIO().KeyCtrl, "重置为默认值")) {
                         config.Reset();
                         Plugin.Settings.Save();
                     }
 
-                    ImGuiExt.HoverTooltip("Hold Control to allow reset");
+                    ImGuiExt.HoverTooltip("按住Control键允许重置");
                 }
                 else {
                     ImGui.SameLine();
-                    if (ImGuiExt.ButtonEnabledWhen(ImGui.GetIO().KeyCtrl, "Delete")) {
+                    if (ImGuiExt.ButtonEnabledWhen(ImGui.GetIO().KeyCtrl, "删除")) {
                         actions.Add(() =>
                         {
                             Plugin.Settings.DisplayConfigs.RemoveSelectors(config);
@@ -108,11 +108,11 @@ public static class StatusTab
                         });
                     }
 
-                    ImGuiExt.HoverTooltip("Hold Control to allow deletion");
+                    ImGuiExt.HoverTooltip("按住Control键允许删除");
                 }
 
                 ImGui.SameLine();
-                if (ImGui.Button("Copy to new list")) {
+                if (ImGui.Button("复制到新列表")) {
                     actions.Add(() =>
                     {
                         Plugin.Settings.StatusConfigs.Custom.Add(new StatusConfig(
@@ -153,7 +153,12 @@ public static class StatusTab
                 using (ImRaii.PushColor(ImGuiCol.ButtonHovered, color.Item2))
                 using (ImRaii.PushColor(ImGuiCol.ButtonActive, color.Item3)) {
                     ImGui.SetCursorPosX(ImGui.GetWindowWidth() + buttonXAdjust);
-                    if (ImGui.Button($"{display.ToString()}##toggle{(int)status}", buttonSize)) {
+                    if (ImGui.Button($"{display switch {
+                        StatusVisibility.Hide => "隐藏",
+                        StatusVisibility.Show => "显示",
+                        StatusVisibility.Important => "重要",
+                        _ => display.ToString()
+                    }}##toggle{(int)status}", buttonSize)) {
                         clicked = status;
                     }
                 }
