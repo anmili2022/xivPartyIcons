@@ -51,6 +51,10 @@ jobs:
             Remove-Item ./Output -Recurse -Force
           }
 
+          if (Test-Path ./PartyIcons/Output) {
+            Remove-Item ./PartyIcons/Output -Recurse -Force
+          }
+
       - name: Download Dalamud CN
         shell: pwsh
         run: |
@@ -61,7 +65,7 @@ jobs:
 
       - name: Restore dependencies
         shell: pwsh
-        run: dotnet restore ./PartyIcons/PartyIcons.csproj
+        run: dotnet restore ./PartyIcons.sln -p:Platform=x64
         env:
           DALAMUD_HOME: ${{ env.APPDATA }}\XIVLauncherCN\addon\Hooks\dev
 
@@ -69,10 +73,11 @@ jobs:
         shell: pwsh
         run: |
           $dalamudPath = "$env:AppData\XIVLauncherCN\addon\Hooks\dev\"
-          dotnet build ./PartyIcons/PartyIcons.csproj `
+          dotnet build ./PartyIcons.sln `
             --configuration Release `
             --no-restore `
             --nologo `
+            -p:Platform=x64 `
             -p:DalamudLibPath="$dalamudPath" `
             -p:Version="$env:RELEASE_VERSION" `
             -p:FileVersion="$env:RELEASE_VERSION" `

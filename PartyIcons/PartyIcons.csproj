@@ -9,7 +9,7 @@
         <Description>PartyIcons plugin</Description>
         <Copyright>shdwp 2021</Copyright>
         <PackageProjectUrl>https://github.com/anmili2022/xivPartyIcons</PackageProjectUrl>
-        <Version>1.2.3.1</Version>
+        <Version>1.2.3.5</Version>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 

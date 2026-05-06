@@ -6,6 +6,8 @@ Plugin to display icons instead of names in parties.
 * Automatically detect and show raid roles
 * Show sprout, flower, etc icons in addition to the job icons
 
-Handover: [HANDOVER.md](HANDOVER.md)
+## Maintenance
+
+Handover and maintenance notes: [HANDOVER.md](HANDOVER.md)
 
 Special thanks to PhaineOfCatz for making the PartyIcons icon.
