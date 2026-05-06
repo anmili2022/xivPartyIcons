@@ -97,7 +97,8 @@ Behavior:
 Implementation note:
 
 - The workflow intentionally builds the solution with `Platform=x64`
-- Building `PartyIcons\PartyIcons.csproj` directly can produce a different output path and break release packaging
+- `PartyIcons\DalamudPackager.targets` forces DalamudPackager to use `$(TargetDir)` because the package default still assumes `$(OutputPath)` under `bin\x64\...`
+- Building `PartyIcons\PartyIcons.csproj` directly can produce a different output root than the solution build, but the packager override keeps both modes aligned to the real assembly path
 
 Recommended release flow:
 
