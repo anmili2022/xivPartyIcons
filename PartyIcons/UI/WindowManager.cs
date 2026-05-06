@@ -15,12 +15,14 @@ public sealed class WindowManager : IDisposable
         _windowSystem = new WindowSystem("队伍图标");
         _windowSystem.AddWindow(_settingsWindow);
 
+        Service.PluginInterface.UiBuilder.OpenMainUi += _settingsWindow.Toggle;
         Service.PluginInterface.UiBuilder.OpenConfigUi += _settingsWindow.Toggle;
         Service.PluginInterface.UiBuilder.Draw += _windowSystem.Draw;
     }
 
     public void Dispose()
     {
+        Service.PluginInterface.UiBuilder.OpenMainUi -= _settingsWindow.Toggle;
         Service.PluginInterface.UiBuilder.OpenConfigUi -= _settingsWindow.Toggle;
         Service.PluginInterface.UiBuilder.Draw -= _windowSystem.Draw;
     }

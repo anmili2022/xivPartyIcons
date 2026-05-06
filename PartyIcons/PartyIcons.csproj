@@ -8,7 +8,7 @@
         <Company>shdwp</Company>
         <Description>PartyIcons plugin</Description>
         <Copyright>shdwp 2021</Copyright>
-        <PackageProjectUrl>https://github.com/nebel/xivPartyIcons</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/anmili2022/xivPartyIcons</PackageProjectUrl>
         <Version>1.2.3.1</Version>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
@@ -18,6 +18,12 @@
         <EmbeddedResource Include="Resources/2.png"/>
         <EmbeddedResource Include="Resources/3.png"/>
         <EmbeddedResource Include="Resources/4.png"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="PartyIcons.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>

@@ -1,0 +1,98 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - '*.*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to publish, for example 1.2.3.2
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Resolve release version
+        shell: pwsh
+        run: |
+          $ver = '${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}'
+          if ([string]::IsNullOrWhiteSpace($ver)) {
+            throw 'Release version is empty.'
+          }
+
+          "RELEASE_VERSION=$ver" >> $env:GITHUB_ENV
+
+      - name: Checkout selected ref
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+
+      - name: Checkout pushed ref
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Clean output
+        shell: pwsh
+        run: |
+          if (Test-Path ./Output) {
+            Remove-Item ./Output -Recurse -Force
+          }
+
+      - name: Download Dalamud CN
+        shell: pwsh
+        run: |
+          $dalamudPath = "$env:AppData\XIVLauncherCN\addon\Hooks\dev\"
+          New-Item -ItemType Directory -Force -Path $dalamudPath | Out-Null
+          Invoke-WebRequest -Uri "https://goatcorp.github.io/dalamud-distrib/stg/latest.zip" -OutFile dalamud.zip -UseBasicParsing
+          Expand-Archive -Force dalamud.zip $dalamudPath
+
+      - name: Restore dependencies
+        shell: pwsh
+        run: dotnet restore ./PartyIcons/PartyIcons.csproj
+        env:
+          DALAMUD_HOME: ${{ env.APPDATA }}\XIVLauncherCN\addon\Hooks\dev
+
+      - name: Build release package
+        shell: pwsh
+        run: |
+          $dalamudPath = "$env:AppData\XIVLauncherCN\addon\Hooks\dev\"
+          dotnet build ./PartyIcons/PartyIcons.csproj `
+            --configuration Release `
+            --no-restore `
+            --nologo `
+            -p:DalamudLibPath="$dalamudPath" `
+            -p:Version="$env:RELEASE_VERSION" `
+            -p:FileVersion="$env:RELEASE_VERSION" `
+            -p:AssemblyVersion="$env:RELEASE_VERSION"
+
+      - name: Archive release asset
+        shell: pwsh
+        run: |
+          if (-not (Test-Path ./Output/Release)) {
+            throw 'Expected release output directory ./Output/Release was not created.'
+          }
+
+          Compress-Archive -Path ./Output/Release/* -DestinationPath ./PartyIcons.zip -Force
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: PartyIcons ${{ env.RELEASE_VERSION }}
+          tag_name: ${{ env.RELEASE_VERSION }}
+          target_commitish: ${{ github.sha }}
+          files: ./PartyIcons.zip
+          generate_release_notes: true
+          fail_on_unmatched_files: true

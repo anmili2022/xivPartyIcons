@@ -303,7 +303,7 @@ public sealed class RoleTracker : IDisposable
 
             foreach (var tuple in _suggestionRegexes) {
                 if (tuple.Item2.IsMatch(paddedText)) {
-                    Service.Log.Verbose($"RoleTracker: Message contained role suggestion ({playerName}@{playerWorld}: {text}, detected {tuple.Item1}");
+                    Service.Log.Verbose($"RoleTracker: Message contained role suggestion ({playerName}@{playerWorld}: {text}, detected {tuple.Item1})");
 
                     if (roleToSuggest == RoleId.Undefined) {
                         roleToSuggest = tuple.Item1;
