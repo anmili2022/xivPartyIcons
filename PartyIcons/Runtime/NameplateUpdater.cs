@@ -62,18 +62,7 @@ public sealed class NameplateUpdater : IDisposable
                 Service.NamePlateGui.OnPostNamePlateUpdate += OnPostNamePlateUpdate;
                 break;
             case UpdaterState.Stopped:
-                if (_updaterState == UpdaterState.Ready) {
-                    Plugin.PartyStateTracker.OnPartyStateChange -= OnPartyStateChange;
-                    Service.NamePlateGui.OnNamePlateUpdate -= OnNamePlateUpdate;
-                    Service.NamePlateGui.OnPostNamePlateUpdate -= OnPostNamePlateUpdate;
-                }
-                if (addonPtr == 0) {
-                    addonPtr = Service.GameGui.GetAddonByName("NamePlate");
-                }
-                if (addonPtr != 0) {
-                    ResetAllPlates();
-                    DestroyAllNodes(addonPtr);
-                }
+                StopAndCleanup(addonPtr);
                 break;
             case UpdaterState.Disabled:
                 Plugin.RoleTracker.OnAssignedRolesUpdated -= ForceRedrawNamePlates;
@@ -102,7 +91,8 @@ public sealed class NameplateUpdater : IDisposable
 
     private void OnPreFinalize(AddonEvent type, AddonArgs args)
     {
-        SetReadyState(UpdaterState.Stopped);
+        // Finalize callbacks run while the addon tree is being torn down, so avoid touching UI memory here.
+        StopWithoutCleanup();
         SetReadyState(UpdaterState.WaitingForDraw);
     }
 
@@ -245,6 +235,37 @@ public sealed class NameplateUpdater : IDisposable
     {
         Service.Log.Debug("ForceRedrawNamePlates");
         Service.NamePlateGui.RequestRedraw();
+    }
+
+    private void StopWithoutCleanup()
+    {
+        if (_updaterState == UpdaterState.Ready) {
+            Plugin.PartyStateTracker.OnPartyStateChange -= OnPartyStateChange;
+            Service.NamePlateGui.OnNamePlateUpdate -= OnNamePlateUpdate;
+            Service.NamePlateGui.OnPostNamePlateUpdate -= OnPostNamePlateUpdate;
+        }
+
+        _stateCache = [];
+        _updaterState = UpdaterState.Stopped;
+    }
+
+    private void StopAndCleanup(nint addonPtr)
+    {
+        if (_updaterState == UpdaterState.Ready) {
+            Plugin.PartyStateTracker.OnPartyStateChange -= OnPartyStateChange;
+            Service.NamePlateGui.OnNamePlateUpdate -= OnNamePlateUpdate;
+            Service.NamePlateGui.OnPostNamePlateUpdate -= OnPostNamePlateUpdate;
+        }
+
+        if (addonPtr == 0) {
+            addonPtr = Service.GameGui.GetAddonByName("NamePlate");
+        }
+        if (addonPtr != 0) {
+            ResetAllPlates();
+            DestroyAllNodes(addonPtr);
+        }
+
+        _stateCache = [];
     }
 
     private static void ResetAllPlates()
