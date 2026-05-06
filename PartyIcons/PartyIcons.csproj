@@ -3,6 +3,7 @@
         <TargetFramework>net10.0-windows7.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <OutDir>$(SolutionDir)Output\$(Configuration)\</OutDir>
         <Authors>shdwp, abashby, nebel</Authors>
         <Company>shdwp</Company>
         <Description>PartyIcons plugin</Description>
