@@ -8,6 +8,6 @@ Plugin to display icons instead of names in parties.
 
 ## Maintenance
 
-Handover and maintenance notes: [HANDOVER.md](HANDOVER.md)
+Maintainer handover, build notes, and release steps: [HANDOVER.md](HANDOVER.md)
 
 Special thanks to PhaineOfCatz for making the PartyIcons icon.
