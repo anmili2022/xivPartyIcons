@@ -44,11 +44,11 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Clean output
+      - name: Clean build output
         shell: pwsh
         run: |
-          if (Test-Path ./Output) {
-            Remove-Item ./Output -Recurse -Force
+          if (Test-Path ./PartyIcons/bin/x64/Release) {
+            Remove-Item ./PartyIcons/bin/x64/Release -Recurse -Force
           }
 
           if (Test-Path ./PartyIcons/Output) {
@@ -86,11 +86,17 @@ jobs:
       - name: Archive release asset
         shell: pwsh
         run: |
-          if (-not (Test-Path ./Output/Release)) {
-            throw 'Expected release output directory ./Output/Release was not created.'
+          $releaseDir = './PartyIcons/bin/x64/Release'
+          if (-not (Test-Path $releaseDir)) {
+            throw "Expected release output directory $releaseDir was not created."
           }
 
-          Compress-Archive -Path ./Output/Release/* -DestinationPath ./PartyIcons.zip -Force
+          $packagerZip = Join-Path $releaseDir 'PartyIcons/latest.zip'
+          if (-not (Test-Path $packagerZip)) {
+            throw "Expected packager asset $packagerZip was not created."
+          }
+
+          Copy-Item $packagerZip ./PartyIcons.zip -Force
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
